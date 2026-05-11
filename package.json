@@ -1,0 +1,43 @@
+{
+  "name": "cc-quota-statusline",
+  "version": "0.1.0",
+  "description": "Claude Code statusline with subscription quota (5h / 7d). Extends ccusage by surfacing the rate_limits field cc injects into the statusline hook stdin payload.",
+  "type": "module",
+  "bin": {
+    "cc-quota-statusline": "bin/cc-quota-statusline.mjs"
+  },
+  "files": [
+    "bin",
+    "README.md",
+    "README.zh-CN.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "ccusage": "*"
+  },
+  "keywords": [
+    "claude-code",
+    "claude",
+    "anthropic",
+    "statusline",
+    "ccusage",
+    "rate-limits",
+    "quota",
+    "subscription",
+    "5h",
+    "7d"
+  ],
+  "author": "北山不北",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gxuanmo/cc-quota-statusline.git"
+  },
+  "bugs": {
+    "url": "https://github.com/gxuanmo/cc-quota-statusline/issues"
+  },
+  "homepage": "https://github.com/gxuanmo/cc-quota-statusline#readme"
+}

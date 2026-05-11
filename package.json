@@ -15,7 +15,10 @@
   "engines": {
     "node": ">=18"
   },
-  "dependencies": {
+  "scripts": {
+    "test": "node --check bin/cc-quota-statusline.mjs"
+  },
+  "peerDependencies": {
     "ccusage": "*"
   },
   "keywords": [

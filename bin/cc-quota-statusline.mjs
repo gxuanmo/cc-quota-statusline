@@ -48,6 +48,11 @@ try {
 
 const rl = data?.rate_limits;
 
+const fmtNum = (n) =>
+  n >= 1_000_000 ? (n / 1_000_000).toFixed(1) + 'M'
+  : n >= 1000 ? (n / 1000).toFixed(1) + 'K'
+  : String(n);
+
 if (rl) {
   // Anthropic subscription: delegate cost/rate display to ccusage, then
   // append our own quota line (5h / 7d) on top.
@@ -82,7 +87,6 @@ if (rl) {
       return `${dim}${label}: expired (send a message to refresh)${reset}`;
     }
 
-    // <50% green, 50-80% yellow, >=80% red + alarm
     const color = pct >= 80 ? '\x1b[31m' : pct >= 50 ? '\x1b[33m' : '\x1b[32m';
     const alarm = pct >= 80 ? ' 🚨' : '';
     let resetTxt = '';
@@ -115,24 +119,18 @@ const modelName = data?.model?.display_name || data?.model?.id || 'unknown';
 const tokens = countTokens(data?.transcript_path);
 const ctxWindow = parseContextWindow(data?.model?.id || '');
 
-const fmtNum = (n) =>
-  n >= 1_000_000 ? (n / 1_000_000).toFixed(1) + 'M'
-  : n >= 1000 ? (n / 1000).toFixed(1) + 'K'
-  : String(n);
+const tokenParts = [`📊 ${fmtNum(tokens.in)} in / ${fmtNum(tokens.out)} out`];
+if (tokens.cacheRead) tokenParts.push(`cache: ${fmtNum(tokens.cacheRead)} read`);
+if (tokens.cacheCreate) tokenParts.push(`${fmtNum(tokens.cacheCreate)} created`);
 
-const parts = [`📊 ${fmtNum(tokens.in)} in / ${fmtNum(tokens.out)} out`];
-if (tokens.cacheRead) parts.push(`cache: ${fmtNum(tokens.cacheRead)} read`);
-if (tokens.cacheCreate) parts.push(`${fmtNum(tokens.cacheCreate)} created`);
-
-// Context fill: last assistant message's input_tokens vs model window
-if (tokens.context > 0 && ctxWindow > 0) {
-  const pct = ((tokens.context / ctxWindow) * 100).toFixed(1);
-  parts.push(`🧠 ${fmtNum(tokens.context)}/${fmtNum(ctxWindow)} (${pct}%)`);
-} else if (tokens.context > 0) {
-  parts.push(`🧠 ${fmtNum(tokens.context)}`);
+if (tokens.context > 0) {
+  const label = ctxWindow > 0
+    ? `🧠 ${fmtNum(tokens.context)}/${fmtNum(ctxWindow)} (${((tokens.context / ctxWindow) * 100).toFixed(1)}%)`
+    : `🧠 ${fmtNum(tokens.context)}`;
+  tokenParts.push(label);
 }
 
-process.stdout.write(`🤖 ${modelName}\n${parts.join(' | ')}`);
+process.stdout.write(`🤖 ${modelName}\n${tokenParts.join(' | ')}`);
 
 function parseContextWindow(modelId) {
   // Extract context hint from model name: deepseek-v4-pro[1m] → 1M

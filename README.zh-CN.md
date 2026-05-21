@@ -6,18 +6,23 @@
 
 ## 为什么需要它
 
-`ccusage statusline` 只显示按 token 折算的「假设走 API」成本。但你订阅了 Claude Max / Pro，真正卡你的是 5 小时和 7 天的配额，不是钱。
+`ccusage statusline` 只显示按 token 折算的「假设走 API」成本。但如果你订阅了 Claude Max / Pro，真正卡你的是 5 小时和 7 天的配额，不是钱。**也支持第三方 API**（DeepSeek 等）—— `rate_limits` 不存在时自动切换为 token 消耗统计。
 
-Claude Code v1.2.80+ 其实已经在 statusline hook 的 stdin 里塞了 `rate_limits` 字段，**这个 wrapper 就是把它捞出来显示**。
+Claude Code v1.2.80+ 其实已经在 statusline hook 的 stdin 里塞了 `rate_limits` 字段，**这个 wrapper 就是把它捞出来显示**（没有就自动切 token 统计）。
 
+**Anthropic API：**
 ```
-🤖 Opus 4.7 (1M context) | 💰 $0.13 session / $161.90 today / $34.94 block (4h 10m left) | 🔥 $128.20/hr (Moderate) | 🧠 40,631 (4%)
+🤖 Opus 4.7 (1M context) | 💰 $0.13 session / $161.90 today / ... | 🧠 40,631 (4%)
 📦 5h: 27.0% (resets 05/11 10:20) | 7d: 78.0% (resets 05/12 03:00)
 ```
 
-第一行来自 `ccusage`，原样透传。第二行是这个 wrapper 加的。
+**第三方 API（无 rate_limits）：**
+```
+🤖 deepseek-v4-pro[1m]
+📊 245.1K in / 50.8K out | cache: 3.6M read | 🧠 71.4K/1.0M (7.1%)
+```
 
-颜色阈值：<50% 绿 / 50–80% 黄 / ≥80% 红 + 🚨。
+颜色阈值：<50% 绿 / 50–80% 黄 / ≥80% 红 + 🚨。过期窗口（resets_at 已过）灰字提示"已失效"。
 
 ## 安装
 
@@ -59,11 +64,11 @@ git clone https://github.com/gxuanmo/cc-quota-statusline.git
 ## 原理
 
 1. 读 cc 通过 stdin 发的 JSON payload
-2. 透传给 `ccusage statusline`，拿到原始输出
-3. 从 payload 里取 `rate_limits.five_hour` / `rate_limits.seven_day`
-4. 按颜色阈值 + 重置时间格式化，追加一行
+2. 如果有 `rate_limits`（Anthropic API）：透传给 `ccusage statusline`，追加配额行（颜色阈值 + 重置时间）
+3. 如果没有 `rate_limits`（第三方 API）：跳过 ccusage，解析 transcript `.jsonl` 文件，统计 token 输入/输出、缓存命中、上下文窗口填充率、模型名
+4. 过期检测：`resets_at` 已过 → 灰字显示"已失效"而非残留百分比
 
-整个实现不到 100 行，看 [`bin/cc-quota-statusline.mjs`](./bin/cc-quota-statusline.mjs) 就懂。
+整个实现约 150 行，看 [`bin/cc-quota-statusline.mjs`](./bin/cc-quota-statusline.mjs) 就懂。
 
 ## 和上游的关系
 

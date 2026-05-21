@@ -6,18 +6,23 @@ Claude Code statusline with **subscription quota** (5h / 7d), built on top of [`
 
 ## Why
 
-`ccusage statusline` shows cost figures — useful if you pay per token, less useful if you're on a Claude Max / Pro subscription where the real constraint is the 5-hour and 7-day quota windows.
+`ccusage statusline` shows cost figures — useful if you pay per token, less useful if you're on a Claude Max / Pro subscription where the real constraint is the 5-hour and 7-day quota windows. Also supports **third-party APIs** (DeepSeek, etc.) where Anthropic pricing is meaningless — falls back to token consumption stats instead.
 
-Claude Code v1.2.80+ already injects a `rate_limits` field into the statusline hook stdin payload. **This wrapper surfaces it.**
+Claude Code v1.2.80+ already injects a `rate_limits` field into the statusline hook stdin payload. **This wrapper surfaces it** (or skips to token stats when it's missing).
 
+**Anthropic API:**
 ```
-🤖 Opus 4.7 (1M context) | 💰 $0.13 session / $161.90 today / $34.94 block (4h 10m left) | 🔥 $128.20/hr (Moderate) | 🧠 40,631 (4%)
+🤖 Opus 4.7 (1M context) | 💰 $0.13 session / $161.90 today / ... | 🧠 40,631 (4%)
 📦 5h: 27.0% (resets 05/11 10:20) | 7d: 78.0% (resets 05/12 03:00)
 ```
 
-The first line is `ccusage` (untouched). The second line is what this wrapper adds.
+**Third-party API (no rate_limits):**
+```
+🤖 deepseek-v4-pro[1m]
+📊 245.1K in / 50.8K out | cache: 3.6M read | 🧠 71.4K/1.0M (7.1%)
+```
 
-Color coding on the quota line: <50% green / 50–80% yellow / ≥80% red + 🚨.
+Color coding on the quota line: <50% green / 50–80% yellow / ≥80% red + 🚨. Stale windows (resets_at in the past) show dimmed "expired" text.
 
 ## Setup
 
@@ -59,11 +64,11 @@ Backslashes get swallowed by the shell layer cc spawns on Windows and the script
 ## How it works
 
 1. Read the JSON payload Claude Code sends on stdin.
-2. Pipe it through to `ccusage statusline` and capture the output.
-3. Extract `rate_limits.five_hour` / `rate_limits.seven_day` from the payload.
-4. Append a formatted quota line with color thresholds and reset timestamps.
+2. If `rate_limits` is present (Anthropic API): pipe through to `ccusage statusline`, then append a formatted quota line with color thresholds and reset timestamps.
+3. If `rate_limits` is missing (third-party API): skip ccusage, parse the transcript `.jsonl` file to compute token I/O, cache stats, context window fill, and model name.
+4. Detect stale quota windows — if `resets_at` is in the past, show dimmed "expired" instead of a leftover percentage.
 
-The whole implementation is under 100 lines. Read [`bin/cc-quota-statusline.mjs`](./bin/cc-quota-statusline.mjs).
+The whole implementation is ~150 lines. Read [`bin/cc-quota-statusline.mjs`](./bin/cc-quota-statusline.mjs).
 
 ## Relation to upstream
 

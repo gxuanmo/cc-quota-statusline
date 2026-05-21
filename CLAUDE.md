@@ -2,7 +2,9 @@
 
 ## 项目目的
 
-ccusage 的轻量 statusline wrapper。cc v1.2.80+ 在 stdin 注入了 `rate_limits` 字段，ccusage 没读，我们读了贴在 ccusage 输出后面。
+ccusage 的轻量 statusline wrapper。双模式运行：
+- **Anthropic API**：透传 ccusage，追加 `rate_limits` 配额行（5h / 7d）
+- **第三方 API**（无 `rate_limits`）：跳过 ccusage（费用按 Anthropic 计价不准），直接从 transcript 统计 token 消耗 + 上下文填充率 + 过期检测
 
 ## 关键决策
 
@@ -44,6 +46,7 @@ echo '<payload>' | node bin/cc-quota-statusline.mjs
 ## 边界 / 不做的事
 
 - 不加 disk caching（这是 wrapper 调用方的事）
+- 不加 token 缓存（第三方路径每次全量读 transcript，与 ccusage 行为一致；个人版 `~/.claude/statusline-wrapper.mjs` 可自行加缓存）
 - 不加配置文件支持（出参格式固定，要改直接改源码 fork）
 - 不做多语言输出（保持单一英文输出，国际化交给上游 ccusage 处理）
 - 不内置 ESLint/Prettier（单文件项目，过度工程）

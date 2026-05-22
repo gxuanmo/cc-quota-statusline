@@ -62,7 +62,10 @@ if (rl) {
     { input, encoding: 'utf8', shell: true },
   );
 
-  let out = result.stdout ?? '';
+  const projectPath = data?.cwd || '';
+
+  let out = (result.stdout ?? '');
+  if (projectPath) out = `📁 ${projectPath}\n` + out;
 
   const fmtBlock = (block, label) => {
     if (!block || typeof block.used_percentage !== 'number') return null;
@@ -130,7 +133,8 @@ if (tokens.context > 0) {
   tokenParts.push(label);
 }
 
-process.stdout.write(`🤖 ${modelName}\n${tokenParts.join(' | ')}`);
+const projectPath2 = data?.cwd || '';
+process.stdout.write(`📁 ${projectPath2}\n🤖 ${modelName}\n${tokenParts.join(' | ')}`);
 
 function parseContextWindow(modelId) {
   // Extract context hint from model name: deepseek-v4-pro[1m] → 1M

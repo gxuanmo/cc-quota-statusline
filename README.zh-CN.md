@@ -68,7 +68,7 @@ git clone https://github.com/gxuanmo/cc-quota-statusline.git
 3. 如果没有 `rate_limits`（第三方 API）：跳过 ccusage，解析 transcript `.jsonl` 文件，统计 token 输入/输出、缓存命中、上下文窗口填充率、模型名
 4. 过期检测：`resets_at` 已过 → 灰字显示"已失效"而非残留百分比
 
-整个实现约 150 行，看 [`bin/cc-quota-statusline.mjs`](./bin/cc-quota-statusline.mjs) 就懂。
+整个实现约 175 行，看 [`bin/cc-quota-statusline.mjs`](./bin/cc-quota-statusline.mjs) 就懂。
 
 ## 和上游的关系
 

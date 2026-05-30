@@ -68,7 +68,7 @@ Backslashes get swallowed by the shell layer cc spawns on Windows and the script
 3. If `rate_limits` is missing (third-party API): skip ccusage, parse the transcript `.jsonl` file to compute token I/O, cache stats, context window fill, and model name.
 4. Detect stale quota windows — if `resets_at` is in the past, show dimmed "expired" instead of a leftover percentage.
 
-The whole implementation is ~150 lines. Read [`bin/cc-quota-statusline.mjs`](./bin/cc-quota-statusline.mjs).
+The whole implementation is ~175 lines. Read [`bin/cc-quota-statusline.mjs`](./bin/cc-quota-statusline.mjs).
 
 ## Relation to upstream
 

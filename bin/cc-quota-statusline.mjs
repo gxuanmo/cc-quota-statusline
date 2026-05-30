@@ -7,12 +7,11 @@
 // Usage in ~/.claude/settings.json:
 //   "statusLine": {
 //     "type": "command",
-//     "command": "npx -y cc-quota-statusline"
+//     "command": "node /absolute/path/to/bin/cc-quota-statusline.mjs"
 //   }
 //
-// Windows note: if you bypass `npx` and reference a script by absolute path
-// in settings.json, use FORWARD slashes — backslashes are swallowed by the
-// shell layer Claude Code uses on Windows.
+// Windows note: use FORWARD slashes even on Windows — backslashes are
+// swallowed by the shell layer Claude Code uses on Windows.
 
 import { readFileSync, existsSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
